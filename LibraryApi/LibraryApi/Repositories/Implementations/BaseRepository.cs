@@ -3,7 +3,7 @@ using LibraryApi.Models;
 using LibraryApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace LibraryApi.Repositories.implementations;
+namespace LibraryApi.Repositories.Implementations;
 
 public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
 {
