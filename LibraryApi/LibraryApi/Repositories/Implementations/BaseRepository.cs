@@ -23,7 +23,7 @@ public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
         return entity;
     }
 
-    public async Task<List<T>>  GetAll()
+    public List<T> GetAll()
     {
         return _dbSet.ToList();
     }
