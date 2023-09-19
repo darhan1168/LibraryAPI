@@ -36,4 +36,17 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    var seedValuesService = serviceProvider.GetRequiredService<ISeedValuesService>();
+    var addSeedAdminResult = seedValuesService.AddSeedAdmin().Result;
+    
+    if (!addSeedAdminResult.IsSuccessful)
+    {
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(addSeedAdminResult.Message);
+    }
+}
+
 app.Run();
