@@ -18,13 +18,13 @@ public class AccountController : Controller
         _userService = userService;
     }
     
-    [HttpGet]
+    [HttpGet("Register")]
     public IActionResult Register()
     {
         return Ok();
     }
     
-    [HttpPost]
+    [HttpPost("Register")]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (ModelState.IsValid)
@@ -45,13 +45,13 @@ public class AccountController : Controller
         return BadRequest(new { Error = "Model is not valid" });
     }
 
-    [HttpGet]
+    [HttpGet("Login")]
     public IActionResult Login()
     {
         return Ok();
     }
     
-    [HttpGet]
+    [HttpPost("Login")]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (ModelState.IsValid)
