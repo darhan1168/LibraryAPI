@@ -36,6 +36,36 @@ public class UserService : IUserService
         
         return !addingResult.IsSuccessful ? new Result<bool>(false, addingResult.Message) : new Result<bool>(true);
     }
+
+    public async Task<Result<bool>> Login(string email, string password)
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            return new Result<bool>(false, $"Email or password is empty or null");
+        }
+
+        var user = GetUserByEmail(email);
+        
+        if (user == null)
+        {
+            return new Result<bool>(false, $"User with email {email} not found");
+        }
+        
+        if (!_passwordService.VerifyPassword(password, user.Password))
+        {
+            return new Result<bool>(false, $"Incorrect password");
+        }
+        
+        return new Result<bool>(true);
+    }
+
+    public User? GetUserByEmail(string email)
+    {
+        var usersByEmail = _repository.GetAll().FirstOrDefault(u => u.Email == email);
+
+        return usersByEmail;
+    }
+
     public bool HasAdminInDataBase()
     {
         var usersByEmail = _repository.GetAll().FirstOrDefault(u => u.Role == UserRole.Admin);
