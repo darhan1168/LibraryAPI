@@ -24,7 +24,8 @@ public class RoleAuthorizeFilter : IAuthorizationFilter
         
         if (user.Claims.FirstOrDefault(c => c.Value == _role) == null)
         {
-            context.Result = new ForbidResult();
+            context.Result = new NotFoundResult();
+            return;
         }
     }
 }
