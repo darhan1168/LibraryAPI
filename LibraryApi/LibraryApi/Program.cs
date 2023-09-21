@@ -1,8 +1,10 @@
+using LibraryApi.Models;
 using LibraryApi.Repositories.Implementations;
 using LibraryApi.Repositories.Interfaces;
 using LibraryApi.Services.Implementations;
 using LibraryApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +20,7 @@ builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<ISeedValuesService, SeedValuesService>();
+builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
