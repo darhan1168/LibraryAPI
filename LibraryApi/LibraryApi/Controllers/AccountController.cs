@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using LibraryApi.Enums;
 using LibraryApi.Helpers;
 using LibraryApi.Models;
 using LibraryApi.Services.Interfaces;
@@ -42,7 +43,7 @@ public class AccountController : Controller
                 return BadRequest(new { Error = addingResult.Message });
             }
             
-            await Authenticate(model.Email);
+            await Authenticate(model.Email, model.Role);
             
             return Ok();
         }
@@ -67,8 +68,15 @@ public class AccountController : Controller
             {
                 return BadRequest(new { Error = loginResult.Message });
             }
+
+            var user = _userService.GetUserByEmail(model.Email);
             
-            await Authenticate(model.Email);
+            if (user == null)
+            {
+                return BadRequest(new { Error = $"{nameof(user)} not found" });
+            }
+            
+            await Authenticate(model.Email, user.Role);
             
             return Ok();
         }
@@ -84,11 +92,12 @@ public class AccountController : Controller
         return Ok();
     }
     
-    private async Task Authenticate(string email)
+    private async Task Authenticate(string email, UserRole role)
     {
         var claims = new List<Claim>
         {
-            new (ClaimsIdentity.DefaultNameClaimType, email)
+            new Claim(ClaimsIdentity.DefaultNameClaimType, email),
+            new Claim(ClaimTypes.Role, role.ToString()) 
         };
 
         var id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
