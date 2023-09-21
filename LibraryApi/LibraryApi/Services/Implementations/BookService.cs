@@ -5,12 +5,11 @@ using LibraryApi.Services.Interfaces;
 
 namespace LibraryApi.Services.Implementations;
 
-public class BookService : GenericInterface<Book>, IBookService
+public class BookService : IBookService
 {
     private readonly IBaseRepository<Book> _repository;
 
-    public BookService(IBaseRepository<Book> repository) 
-        : base(repository)
+    public BookService(IBaseRepository<Book> repository)
     {
         _repository = repository;
     }
@@ -22,6 +21,8 @@ public class BookService : GenericInterface<Book>, IBookService
             return new Result<bool>(false, $"{nameof(book)} not found");
         }
 
+        book.Score = 0;
+
         var addingResult = await _repository.Add(book);
 
         return !addingResult.IsSuccessful ? new Result<bool>(false, addingResult.Message) : new Result<bool>(true);
@@ -29,7 +30,7 @@ public class BookService : GenericInterface<Book>, IBookService
 
     public async Task<Result<bool>> DeleteBook(int id)
     {
-        var book = await GetById(id);
+        var book = await GetBookById(id);
         
         if (book == null)
         {
@@ -51,5 +52,19 @@ public class BookService : GenericInterface<Book>, IBookService
         var updatingResult = await _repository.Update(book);
 
         return !updatingResult.IsSuccessful ? new Result<bool>(false, updatingResult.Message) : new Result<bool>(true);
+    }
+
+    public async Task<Book> GetBookById(int id)
+    {
+        var book = await _repository.GetById(id);
+
+        return book;
+    }
+
+    public List<Book> GetAllBooks()
+    {
+        var books = _repository.GetAll();
+
+        return books;
     }
 }
