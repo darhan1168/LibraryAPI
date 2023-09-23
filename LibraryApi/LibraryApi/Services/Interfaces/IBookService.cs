@@ -9,5 +9,6 @@ public interface IBookService
     Task<Result<bool>> DeleteBook(int id);
     Task<Result<bool>> UpdateBook(Book book);
     Task<Book> GetBookById(int id);
+    List<Book> GetBooksByUserId(int userId);
     List<Book> GetAllBooks();
 }

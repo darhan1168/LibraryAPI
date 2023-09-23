@@ -61,6 +61,15 @@ public class BookService : IBookService
         return book;
     }
 
+    public List<Book> GetBooksByUserId(int userId)
+    {
+        var booksByUserId = _repository.GetAll()
+            .Where(b => b.UsersBooks.Any(ub => ub.UserId == userId))
+            .ToList();
+        
+        return booksByUserId;
+    }
+
     public List<Book> GetAllBooks()
     {
         var books = _repository.GetAll();
