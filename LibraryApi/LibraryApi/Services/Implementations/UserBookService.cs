@@ -33,7 +33,7 @@ public class UserBookService : IUserBookService
             UserId = user.Id
         };
 
-        if (HasUserThisUserBook(user, userBook))
+        if (FindUserBooksForBook(user, book).Item1)
         {
             return new Result<bool>(false, $"This book already added in your books");
         }
@@ -43,15 +43,45 @@ public class UserBookService : IUserBookService
         return !addingResult.IsSuccessful ? new Result<bool>(false, addingResult.Message) : new Result<bool>(true);
     }
 
-    private bool HasUserThisUserBook(User user, UserBook userBook)
+    public async Task<Result<bool>> DeleteBookFromUser(Book book, User user)
+    {
+        if (book == null)
+        {
+            return new Result<bool>(false, $"{nameof(book)} not found");
+        }
+        if (user == null)
+        {
+            return new Result<bool>(false, $"{nameof(user)} not found");
+        }
+
+        var userBooks = user.UserBooks;
+
+        if (userBooks == null)
+        {
+            return new Result<bool>(false, $"Have not any books in your library");
+        }
+
+        var userBook = userBooks.FirstOrDefault(ub => ub.BookId == book.Id);
+        
+        if (userBook == null)
+        {
+            return new Result<bool>(false, $"{nameof(book)}  not found  in your library");
+        }
+
+        var deletingResult = await _repository.Delete(userBook);
+
+        return !deletingResult.IsSuccessful ? new Result<bool>(false, deletingResult.Message) : new Result<bool>(true);
+    }
+
+    private (bool, List<UserBook>?) FindUserBooksForBook(User user, Book book)
     {
         if (user.UserBooks == null)
         {
-            return false;
+            return (false, null);
         }
-        
-        var result = user.UserBooks.Any(ub => ub.BookId == userBook.BookId && ub.UserId == userBook.UserId);
-
-        return result;
+    
+        var userBooks = user.UserBooks.Where(ub => ub.BookId == book.Id && ub.UserId == user.Id).ToList();
+    
+        return (userBooks.Any(), userBooks.Any() ? userBooks : null);
     }
 }
