@@ -58,6 +58,56 @@ public class BookControllerTests : GenericControllerTestsSettings<BookController
     }
 
     [Fact]
+    public void IndexBooksForUser_EmptyListOfBooks_BadRequest()
+    {
+        var mockService = new Mock<IBookService>();
+        var userService = new Mock<IUserService>();
+        var userBookService = new Mock<IUserBookService>();
+        
+        userService.Setup(service => service.GetUserByEmail(It.IsAny<string>()))
+            .Returns(new User());
+        
+        mockService.Setup(service => service.GetBooksByUserId(It.IsAny<int>()))
+            .Returns(new List<Book>());
+        
+        var controller = new BookController(mockService.Object, userService.Object, userBookService.Object);
+
+        SettingsHttpConnection(controller);
+        
+        var result = controller.IndexBooksForUser() as BadRequestObjectResult;
+
+        Assert.Equal(400, result?.StatusCode);
+    }
+    
+    [Fact]
+    public void IndexBooksForUser_NotEmptyListOfBooks_Ok()
+    {
+        var mockService = new Mock<IBookService>();
+        var userService = new Mock<IUserService>();
+        var userBookService = new Mock<IUserBookService>();
+        
+        var book = new Book()
+        {
+            Name = "BookName",
+            Author = "AuthorName"
+        };
+        
+        userService.Setup(service => service.GetUserByEmail(It.IsAny<string>()))
+            .Returns(new User());
+        
+        mockService.Setup(service => service.GetBooksByUserId(It.IsAny<int>()))
+            .Returns(new List<Book>{ book });
+        
+        var controller = new BookController(mockService.Object, userService.Object, userBookService.Object);
+
+        SettingsHttpConnection(controller);
+        
+        var result = controller.IndexBooksForUser() as OkObjectResult;
+
+        Assert.Equal(200, result?.StatusCode);
+    }
+    
+    [Fact]
     public async Task AddBook_ValidBook_Ok()
     {
         var mockService = new Mock<IBookService>();
