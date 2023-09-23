@@ -3,6 +3,7 @@ using LibraryApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryApi.Migrations
 {
     [DbContext(typeof(AppContext))]
-    partial class AppContextModelSnapshot : ModelSnapshot
+    [Migration("20230922090930_AddUserBookInContext")]
+    partial class AddUserBookInContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,6 +26,21 @@ namespace LibraryApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("BookUser", b =>
+                {
+                    b.Property<int>("BooksId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BooksId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("BookUser");
+                });
 
             modelBuilder.Entity("LibraryApi.Models.Book", b =>
                 {
@@ -95,16 +113,31 @@ namespace LibraryApi.Migrations
                     b.ToTable("UserBooks");
                 });
 
+            modelBuilder.Entity("BookUser", b =>
+                {
+                    b.HasOne("LibraryApi.Models.Book", null)
+                        .WithMany()
+                        .HasForeignKey("BooksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LibraryApi.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("LibraryApi.Models.UserBook", b =>
                 {
                     b.HasOne("LibraryApi.Models.Book", "Book")
-                        .WithMany("UsersBooks")
+                        .WithMany()
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("LibraryApi.Models.User", "User")
-                        .WithMany("UserBooks")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -112,16 +145,6 @@ namespace LibraryApi.Migrations
                     b.Navigation("Book");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("LibraryApi.Models.Book", b =>
-                {
-                    b.Navigation("UsersBooks");
-                });
-
-            modelBuilder.Entity("LibraryApi.Models.User", b =>
-                {
-                    b.Navigation("UserBooks");
                 });
 #pragma warning restore 612, 618
         }

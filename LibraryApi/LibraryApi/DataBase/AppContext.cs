@@ -7,6 +7,7 @@ public class AppContext : DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Book> Books { get; set; }
+    public DbSet<UserBook> UserBooks { get; set; }
     
     public AppContext(DbContextOptions options) : base(options)
     {
