@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using LibraryApi.Models;
 using LibraryApi.Repositories.Implementations;
 using LibraryApi.Repositories.Interfaces;
@@ -21,7 +22,12 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<ISeedValuesService, SeedValuesService>();
 builder.Services.AddScoped<IBookService, BookService>();
-builder.Services.AddControllers();
+builder.Services.AddScoped<IUserBookService, UserBookService>();
+builder.Services.AddControllers()        
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    });;
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
