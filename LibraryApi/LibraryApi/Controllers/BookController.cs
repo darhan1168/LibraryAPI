@@ -13,14 +13,18 @@ namespace LibraryApi.Controllers;
 public class BookController : Controller
 {
     private readonly IBookService _bookService;
-    
-    public BookController(IBookService bookService)
+    private readonly IUserService _userService;
+    private readonly IUserBookService _userBookService;
+
+    public BookController(IBookService bookService, IUserService userService, IUserBookService userBookService)
     {
         _bookService = bookService;
+        _userService = userService;
+        _userBookService = userBookService;
     }
     
     [HttpGet("Books")]
-    public IActionResult AllBooks()
+    public IActionResult IndexBooks()
     {
         var books = _bookService.GetAllBooks();
 
@@ -30,6 +34,41 @@ public class BookController : Controller
         }
         
         return Ok(books);
+    }
+    
+    [HttpGet("UserBooks")]
+    public IActionResult IndexBooksForUser()
+    {
+        var userEmail = User.Identity?.Name;
+
+        if (userEmail == null)
+        {
+            return BadRequest(new { Error = "User is not authorize" });
+        }
+
+        var user = _userService.GetUserByEmail(userEmail);
+        
+        if (user == null)
+        {
+            return BadRequest(new { Error = "User is not found" });
+        }
+        
+        var booksForUser = _bookService.GetBooksByUserId(user.Id);
+
+        if (!booksForUser.Any())
+        {
+            return BadRequest(new { Error = $"Books not added yet" });
+        }
+
+        var bookViewModels = booksForUser.Select(book => 
+        {
+            var bookViewModel = new BookViewModel();
+            book.MapTo(bookViewModel);
+            
+            return bookViewModel;
+        }).ToList();
+        
+        return Ok(bookViewModels);
     }
     
     [RoleAuthorize("Admin")]
@@ -131,5 +170,39 @@ public class BookController : Controller
         }
         
         return BadRequest(new { Error = "Model is not valid" });
+    }
+
+    [HttpPost("AddBookForUser")]
+    public async Task<IActionResult> AddBookForUser(int id)
+    {
+        var book = await _bookService.GetBookById(id);
+        
+        if (book == null)
+        {
+            return BadRequest(new { Error = "Book is not found" });
+        }
+        
+        var userEmail = User.Identity?.Name;
+
+        if (userEmail == null)
+        {
+            return BadRequest(new { Error = "User is not authorize" });
+        }
+
+        var user = _userService.GetUserByEmail(userEmail);
+        
+        if (user == null)
+        {
+            return BadRequest(new { Error = "User is not found" });
+        }
+
+        var addingBookForUserResult = await _userBookService.AddBookForUser(book, user);
+        
+        if (!addingBookForUserResult.IsSuccessful)
+        {
+            return BadRequest(new { Error = addingBookForUserResult.Message });
+        }
+        
+        return Ok();
     }
 }
