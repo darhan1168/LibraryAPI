@@ -11,19 +11,21 @@ using Moq;
 
 namespace LibraryApiUnitTests;
 
-public class BookControllerTests
+public class BookControllerTests : GenericControllerTestsSettings<BookController>
 {
     [Fact]
     public void AllBooks_EmptyListOfBooks_BadRequest()
     {
         var mockService = new Mock<IBookService>();
+        var userService = new Mock<IUserService>();
+        var userBookService = new Mock<IUserBookService>();
         
         mockService.Setup(service => service.GetAllBooks())
                 .Returns(new List<Book>());
         
-        var controller = new BookController(mockService.Object);
+        var controller = new BookController(mockService.Object, userService.Object, userBookService.Object);
         
-        var result = controller.AllBooks() as BadRequestObjectResult;
+        var result = controller.IndexBooks() as BadRequestObjectResult;
 
         Assert.Equal(400, result?.StatusCode);
     }
@@ -32,7 +34,9 @@ public class BookControllerTests
     public void AllBooks_NotEmptyListOfBooks_Ok()
     {
         var mockService = new Mock<IBookService>();
-
+        var userService = new Mock<IUserService>();
+        var userBookService = new Mock<IUserBookService>();
+        
         var book = new Book()
         {
             Name = "BookName",
@@ -42,9 +46,9 @@ public class BookControllerTests
         mockService.Setup(service => service.GetAllBooks())
             .Returns(new List<Book> { book });
         
-        var controller = new BookController(mockService.Object);
+        var controller = new BookController(mockService.Object, userService.Object, userBookService.Object);
         
-        var result = controller.AllBooks() as OkObjectResult;
+        var result = controller.IndexBooks() as OkObjectResult;
 
         Assert.NotNull(result);
         Assert.Equal(200, result.StatusCode);
@@ -57,6 +61,8 @@ public class BookControllerTests
     public async Task AddBook_ValidBook_Ok()
     {
         var mockService = new Mock<IBookService>();
+        var userService = new Mock<IUserService>();
+        var userBookService = new Mock<IUserBookService>();
 
         var bookViewModel = new BookViewModel()
         {
@@ -67,21 +73,9 @@ public class BookControllerTests
         mockService.Setup(service => service.AddBook(It.IsAny<Book>()))
             .ReturnsAsync(new Result<bool>(true));
         
-        var controller = new BookController(mockService.Object);
+        var controller = new BookController(mockService.Object, userService.Object, userBookService.Object);
         
-        var httpContext = new DefaultHttpContext
-        {
-            User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, "username"), 
-                new Claim(ClaimTypes.Role, UserRole.Admin.ToString())
-            }, "test"))
-        };
-        
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
+        SettingsHttpConnection(controller);
         
         var result = await controller.AddBook(bookViewModel) as OkResult;
         
@@ -92,25 +86,15 @@ public class BookControllerTests
     public async Task DeleteBook_NotFoundBook_BadRequest()
     {
         var mockService = new Mock<IBookService>();
+        var userService = new Mock<IUserService>();
+        var userBookService = new Mock<IUserBookService>();
 
         mockService.Setup(service => service.GetBookById(It.IsAny<int>()))
             .ReturnsAsync((Book)null);
         
-        var controller = new BookController(mockService.Object);
+        var controller = new BookController(mockService.Object, userService.Object, userBookService.Object);
         
-        var httpContext = new DefaultHttpContext
-        {
-            User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, "username"), 
-                new Claim(ClaimTypes.Role, UserRole.Admin.ToString())
-            }, "test"))
-        };
-        
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
+        SettingsHttpConnection(controller);
         
         var result = await controller.DeleteBook(1) as BadRequestObjectResult;
         
@@ -121,6 +105,8 @@ public class BookControllerTests
     public async Task DeleteBook_FoundBook_Ok()
     {
         var mockService = new Mock<IBookService>();
+        var userService = new Mock<IUserService>();
+        var userBookService = new Mock<IUserBookService>();
 
         mockService.Setup(service => service.GetBookById(It.IsAny<int>()))
             .ReturnsAsync(new Book()
@@ -128,21 +114,9 @@ public class BookControllerTests
                 Id = 1
             });
         
-        var controller = new BookController(mockService.Object);
-        
-        var httpContext = new DefaultHttpContext
-        {
-            User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, "username"), 
-                new Claim(ClaimTypes.Role, UserRole.Admin.ToString())
-            }, "test"))
-        };
-        
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
+        var controller = new BookController(mockService.Object, userService.Object, userBookService.Object);
+
+        SettingsHttpConnection(controller);
         
         var result = await controller.DeleteBook(1) as OkResult;
         
