@@ -239,4 +239,38 @@ public class BookController : Controller
         
         return Ok();
     }
+
+    [HttpPost("AddRate/{rating:int}/ForBook/{id:int}")]
+    public async Task<IActionResult> AddRateForBook(int id, int rating)
+    {
+        var book = await _bookService.GetBookById(id);
+        
+        if (book == null)
+        {
+            return BadRequest(new { Error = "Book is not found" });
+        }
+
+        var userEmail = User.Identity?.Name;
+
+        if (userEmail == null)
+        {
+            return BadRequest(new { Error = "User is not authorize" });
+        }
+
+        var user = _userService.GetUserByEmail(userEmail);
+        
+        if (user == null)
+        {
+            return BadRequest(new { Error = "User is not found" });
+        }
+        
+        var updatingScoreResult = await _bookService.UpdateScoreForBookByUser(book, user, rating);
+        
+        if (!updatingScoreResult.IsSuccessful)
+        {
+            return BadRequest(new { Error = updatingScoreResult.Message });
+        }
+        
+        return Ok();
+    }
 }

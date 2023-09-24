@@ -30,7 +30,8 @@ public class UserBookService : IUserBookService
             Book = book,
             User = user,
             BookId = book.Id,
-            UserId = user.Id
+            UserId = user.Id,
+            RatedByUser = false
         };
 
         if (FindUserBooksForBook(user, book).Item1)
@@ -71,6 +72,39 @@ public class UserBookService : IUserBookService
         var deletingResult = await _repository.Delete(userBook);
 
         return !deletingResult.IsSuccessful ? new Result<bool>(false, deletingResult.Message) : new Result<bool>(true);
+    }
+
+    public async Task<Result<bool>> UpdateTrueRatedByUser(Book book, User user)
+    {
+        if (book == null)
+        {
+            return new Result<bool>(false, $"{nameof(book)} not found");
+        }
+        
+        if (user == null)
+        {
+            return new Result<bool>(false, $"{nameof(user)} not found");
+        }
+
+        var userBook = GetByBookAndUser(book, user);
+        
+        if (userBook == null)
+        {
+            return new Result<bool>(false, $"{nameof(userBook)} not found");
+        }
+
+        userBook.RatedByUser = true;
+
+        var updatingResult = await _repository.Update(userBook);
+        
+        return !updatingResult.IsSuccessful ? new Result<bool>(false, updatingResult.Message) : new Result<bool>(true);
+    }
+
+    private UserBook? GetByBookAndUser(Book book, User user)
+    {
+        var userBook = _repository.GetAll().FirstOrDefault(ub => ub.BookId == book.Id && ub.UserId == user.Id);
+
+        return userBook;
     }
 
     private (bool, List<UserBook>?) FindUserBooksForBook(User user, Book book)
