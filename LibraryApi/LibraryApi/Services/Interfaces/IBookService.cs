@@ -1,3 +1,4 @@
+using LibraryApi.Enums;
 using LibraryApi.Helpers;
 using LibraryApi.Models;
 
@@ -11,5 +12,5 @@ public interface IBookService
     Task<Result<bool>> UpdateScoreForBookByUser(Book book, User user, int rating);
     Task<Book> GetBookById(int id);
     List<Book> GetBooksByUserId(int userId);
-    List<Book> GetAllBooks();
+    List<Book> GetAllBooks(BookType? bookType);
 }

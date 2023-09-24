@@ -1,4 +1,5 @@
 using LibraryApi.CustomAttributes;
+using LibraryApi.Enums;
 using LibraryApi.Helpers;
 using LibraryApi.Models;
 using LibraryApi.Services.Interfaces;
@@ -24,16 +25,18 @@ public class BookController : Controller
     }
     
     [HttpGet("Books")]
-    public IActionResult IndexBooks()
+    public IActionResult IndexBooks(BookType? bookType = null)
     {
-        var books = _bookService.GetAllBooks();
+        var books = _bookService.GetAllBooks(bookType);
 
         if (!books.Any())
         {
             return BadRequest(new { Error = $"{nameof(books)} not added yet" });
         }
         
-        return Ok(books);
+        var booksViewModel = BooksMapToViewModel(books);
+        
+        return Ok(booksViewModel);
     }
     
     [HttpGet("UserBooks")]
@@ -60,15 +63,9 @@ public class BookController : Controller
             return BadRequest(new { Error = $"Books not added yet" });
         }
 
-        var bookViewModels = booksForUser.Select(book => 
-        {
-            var bookViewModel = new BookViewModel();
-            book.MapTo(bookViewModel);
-            
-            return bookViewModel;
-        }).ToList();
+        var booksViewModel = BooksMapToViewModel(booksForUser);
         
-        return Ok(bookViewModels);
+        return Ok(booksViewModel);
     }
     
     [RoleAuthorize("Admin")]
@@ -272,5 +269,18 @@ public class BookController : Controller
         }
         
         return Ok();
+    }
+
+    private List<BookViewModel> BooksMapToViewModel(List<Book> books)
+    {
+        var booksViewModels = books.Select(book => 
+        {
+            var bookViewModel = new BookViewModel();
+            book.MapTo(bookViewModel);
+            
+            return bookViewModel;
+        }).ToList();
+
+        return booksViewModels;
     }
 }

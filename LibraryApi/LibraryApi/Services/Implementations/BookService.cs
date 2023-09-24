@@ -1,3 +1,4 @@
+using LibraryApi.Enums;
 using LibraryApi.Helpers;
 using LibraryApi.Models;
 using LibraryApi.Repositories.Interfaces;
@@ -95,11 +96,11 @@ public class BookService : IBookService
         return booksByUserId;
     }
 
-    public List<Book> GetAllBooks()
+    public List<Book> GetAllBooks(BookType? bookType)
     {
         var books = _repository.GetAll();
 
-        return books;
+        return bookType != null ? books.Where(b => b.Type == bookType).ToList() : books;
     }
 
     private async Task<Result<bool>> AddRatingForBook(Book book, User user, int rating)
